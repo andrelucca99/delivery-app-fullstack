@@ -1,5 +1,6 @@
 import { prisma } from "../../database/prisma";
 import { Prisma, SaleStatus } from "@prisma/client";
+import { AppError } from "../../errors/AppError";
 
 const STATUS_FLOW: Record<SaleStatus, SaleStatus[]> = {
   PENDING: ["PENDING"],
@@ -80,19 +81,17 @@ export class SalesService {
     });
 
     if (!sale) {
-      throw new Error("Sale not found");
+      throw new AppError("Sale not found", 404);
     }
 
     if (sale.sellerId !== sellerId) {
-      throw new Error("Not allowed");
+      throw new AppError("Not allowed", 403);
     }
 
     const allowedStatuses = STATUS_FLOW[sale.status];
 
     if (!allowedStatuses.includes(newStatus)) {
-      throw new Error(
-        `Invalid status transition from ${sale.status} to ${newStatus}`
-      );
+      throw new AppError(`Invalid status transition from ${sale.status} to ${newStatus}`, 400);
     }
 
     return prisma.sale.update({
@@ -124,7 +123,7 @@ export class SalesService {
     });
 
     if (!sale) {
-      throw new Error("Sale not found");
+      throw new AppError("Sale not found", 404);
     }
 
     // Autorização
@@ -132,7 +131,7 @@ export class SalesService {
     const roleSeller = role === "SELLER" && sale.sellerId !== userId;
 
     if (roleCustomer || roleSeller) {
-      throw new Error("Not allowed");
+      throw new AppError("Not allowed", 403);
     }
 
     return sale;
