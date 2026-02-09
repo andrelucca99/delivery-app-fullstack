@@ -13,16 +13,55 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(CUSTOMER)
+
+  sales       Sale[] @relation("UserSales")
+  salesAsSeller Sale[] @relation("SellerSales")
+
   createdAt DateTime @default(now())
 }
 
 model Product {
-  id       Int     @id @default(autoincrement())
-  name     String
-  price    Decimal @db.Decimal(10, 2)
-  urlImage String
+  id            Int     @id @default(autoincrement())
+  name          String
+  price         Decimal @db.Decimal(10, 2)
+  urlImage      String
+  saleProducts  SaleProduct[]
 
   createdAt DateTime @default(now())
+}
+
+model Sale {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  sellerId     Int
+  totalPrice   Decimal   @db.Decimal(10, 2)
+  status       SaleStatus @default(PENDING)
+  deliveryAddr String
+  deliveryNum  String
+
+  user     User @relation("UserSales", fields: [userId], references: [id])
+  seller   User @relation("SellerSales", fields: [sellerId], references: [id])
+  products SaleProduct[]
+
+  createdAt DateTime @default(now())
+}
+
+model SaleProduct {
+  saleId    Int
+  productId Int
+  quantity  Int
+
+  sale    Sale    @relation(fields: [saleId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@id([saleId, productId])
+}
+
+enum SaleStatus {
+  PENDING
+  PREPARING
+  IN_TRANSIT
+  DELIVERED
 }
 
 enum Role {
