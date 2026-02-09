@@ -5,6 +5,7 @@ import { prisma } from "./database/prisma";
 import { authMiddleware } from "./middlewares/auth.middleware";
 import productsRoutes from "./modules/products/products.routes";
 import salesRoutes from "./modules/sales/sales.routes";
+import { errorMiddleware } from "./middlewares/error.middleware";
 
 export const app = express();
 
@@ -23,3 +24,5 @@ app.get("/health", async (_req, res) => {
 app.get("/me", authMiddleware, (req, res) => {
   return res.json({ user: req.user });
 });
+
+app.use(errorMiddleware);
