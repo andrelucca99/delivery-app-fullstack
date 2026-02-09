@@ -44,7 +44,7 @@ export class SalesController {
     const sale = await SalesService.findById(
       saleId,
       req.user!.id,
-      req.user!.role
+      req.user!.role as "CUSTOMER" | "SELLER"
     );
 
     return res.json(sale);
