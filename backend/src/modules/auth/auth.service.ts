@@ -1,11 +1,12 @@
 import { prisma } from "../../database/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { AppError } from "../../errors/AppError";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET not defined");
+  throw new AppError("JWT_SECRET not defined", 500);
 }
 
 export class AuthService {
@@ -15,7 +16,7 @@ export class AuthService {
     });
 
     if (userExists) {
-      throw new Error("User already exists");
+      throw new AppError("User already exists", 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,13 +43,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new AppError("Invalid credentials", 401);
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new Error("Invalid credentials");
+      throw new AppError("Invalid credentials", 401);
     }
 
     const token = jwt.sign(
