@@ -1,5 +1,12 @@
 import { prisma } from "../../database/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, SaleStatus } from "@prisma/client";
+
+const STATUS_FLOW: Record<SaleStatus, SaleStatus[]> = {
+  PENDING: ["PENDING"],
+  PREPARING: ["PREPARING"],
+  IN_TRANSIT: ["IN_TRANSIT"],
+  DELIVERED: [],
+};
 
 interface ProductInput {
   productId: number;
@@ -60,6 +67,37 @@ export class SalesService {
       where: { sellerId },
       include: { products: true },
       orderBy: { id: "desc" },
+    });
+  }
+
+  static async updateStatus(
+    saleId: number,
+    sellerId: number,
+    newStatus: SaleStatus
+  ) {
+    const sale = await prisma.sale.findUnique({
+      where: { id: saleId },
+    });
+
+    if (!sale) {
+      throw new Error("Sale not found");
+    }
+
+    if (sale.sellerId !== sellerId) {
+      throw new Error("Not allowed");
+    }
+
+    const allowedStatuses = STATUS_FLOW[sale.status];
+
+    if (!allowedStatuses.includes(newStatus)) {
+      throw new Error(
+        `Invalid status transition from ${sale.status} to ${newStatus}`
+      );
+    }
+
+    return prisma.sale.update({
+      where: { id: saleId },
+      data: { status: newStatus },
     });
   }
 }
