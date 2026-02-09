@@ -8,6 +8,7 @@ const router = Router();
 router.post("/", authMiddleware, SalesController.create);
 router.get("/me", authMiddleware, SalesController.findMySales);
 router.get("/seller", authMiddleware, SalesController.findSalesAsSeller);
+router.get("/:id", authMiddleware, SalesController.findById);
 
 router.patch("/:id/status", authMiddleware, sellerOnly, SalesController.updateStatus);
 

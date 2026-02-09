@@ -37,4 +37,16 @@ export class SalesController {
 
     return res.json(updatedSale);
   }
+
+  static async findById(req: Request, res: Response) {
+    const saleId = Number(req.params.id);
+
+    const sale = await SalesService.findById(
+      saleId,
+      req.user!.id,
+      req.user!.role
+    );
+
+    return res.json(sale);
+  }
 }

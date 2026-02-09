@@ -100,4 +100,41 @@ export class SalesService {
       data: { status: newStatus },
     });
   }
+
+  static async findById(
+    saleId: number,
+    userId: number,
+    role: "CUSTOMER" | "SELLER"
+  ) {
+    const sale = await prisma.sale.findUnique({
+      where: { id: saleId },
+      include: {
+        products: {
+          include: {
+            product: true,
+          },
+        },
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+        seller: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    if (!sale) {
+      throw new Error("Sale not found");
+    }
+
+    // Autorização
+    const roleCustomer = role === "CUSTOMER" && sale.userId !== userId;
+    const roleSeller = role === "SELLER" && sale.sellerId !== userId;
+
+    if (roleCustomer || roleSeller) {
+      throw new Error("Not allowed");
+    }
+
+    return sale;
+  }
 }
