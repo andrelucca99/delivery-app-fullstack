@@ -16,6 +16,15 @@ model User {
   createdAt DateTime @default(now())
 }
 
+model Product {
+  id       Int     @id @default(autoincrement())
+  name     String
+  price    Decimal @db.Decimal(10, 2)
+  urlImage String
+
+  createdAt DateTime @default(now())
+}
+
 enum Role {
   CUSTOMER
   SELLER
